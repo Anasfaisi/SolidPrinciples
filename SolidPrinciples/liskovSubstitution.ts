@@ -38,40 +38,40 @@ export {} // Makes this file a module → private scope, no global conflicts
 //? ❌ STEP 1 — WITHOUT LSP (Violation — study this carefully)
 //? ============================================================
 
-class BadPaymentMethod {
-    pay(amount: number): void {
-        console.log(`Paid ₹${amount}`)
-    }
-    refund(amount: number): void {
-        console.log(`Refunded ₹${amount}`)
-    }
-}
+// class BadPaymentMethod {
+//     pay(amount: number): void {
+//         console.log(`Paid ₹${amount}`)
+//     }
+//     refund(amount: number): void {
+//         console.log(`Refunded ₹${amount}`)
+//     }
+// }
 
-class BadCreditCard extends BadPaymentMethod {
-    pay(amount: number): void {
-        console.log(`CreditCard: Paid ₹${amount}`)
-    }
-    refund(amount: number): void {
-        console.log(`CreditCard: Refunded ₹${amount}`)
-    }
-}
+// class BadCreditCard extends BadPaymentMethod {
+//     pay(amount: number): void {
+//         console.log(`CreditCard: Paid ₹${amount}`)
+//     }
+//     refund(amount: number): void {
+//         console.log(`CreditCard: Refunded ₹${amount}`)
+//     }
+// }
 
 //? ❌ GiftCard CANNOT refund, but it is FORCED to inherit refund()
 //?    because it extends BadPaymentMethod.
 //?    The only way out is to throw an error — which BREAKS LSP.
-class BadGiftCard extends BadPaymentMethod {
-    pay(amount: number): void {
-        console.log(`GiftCard: Paid ₹${amount}`)
-    }
-    refund(amount: number): void {
-        throw new Error("GiftCards cannot be refunded!") // ❌ LSP broken!
-    }
-}
+// class BadGiftCard extends BadPaymentMethod {
+//     pay(amount: number): void {
+//         console.log(`GiftCard: Paid ₹${amount}`)
+//     }
+//     refund(amount: number): void {
+//         throw new Error("GiftCards cannot be refunded!") // ❌ LSP broken!
+//     }
+// }
 
 //? This function trusts the contract: "every BadPaymentMethod can refund"
-function processRefund(method: BadPaymentMethod, amount: number): void {
-    method.refund(amount) // 💣 Explodes silently when method is BadGiftCard
-}
+// function processRefund(method: BadPaymentMethod, amount: number): void {
+//     method.refund(amount) // 💣 Explodes silently when method is BadGiftCard
+// }
 
 //? Demonstration of the hidden time-bomb:
 // const badGift = new BadGiftCard()
@@ -97,68 +97,68 @@ function processRefund(method: BadPaymentMethod, amount: number): void {
 //? Now GiftCard simply does NOT implement IRefundable.
 //? No lies. No fake throws. The type system enforces the contract.
 
-interface IPayable {
-    pay(amount: number): void
-}
+// interface IPayable {
+//     pay(amount: number): void
+// }
 
-interface IRefundable {
-    refund(amount: number): void
-}
+// interface IRefundable {
+//     refund(amount: number): void
+// }
 
 //? CreditCard can both pay AND refund — it implements both interfaces.
-class CreditCard implements IPayable, IRefundable {
-    pay(amount: number): void {
-        console.log(`CreditCard: Paid ₹${amount}`)
-    }
-    refund(amount: number): void {
-        console.log(`CreditCard: Refunded ₹${amount}`)
-    }
-}
+// class CreditCard implements IPayable, IRefundable {
+//     pay(amount: number): void {
+//         console.log(`CreditCard: Paid ₹${amount}`)
+//     }
+//     refund(amount: number): void {
+//         console.log(`CreditCard: Refunded ₹${amount}`)
+//     }
+// }
 
 //? DebitCard can both pay AND refund too.
-class DebitCard implements IPayable, IRefundable {
-    pay(amount: number): void {
-        console.log(`DebitCard: Paid ₹${amount}`)
-    }
-    refund(amount: number): void {
-        console.log(`DebitCard: Refunded ₹${amount}`)
-    }
-}
+// class DebitCard implements IPayable, IRefundable {
+//     pay(amount: number): void {
+//         console.log(`DebitCard: Paid ₹${amount}`)
+//     }
+//     refund(amount: number): void {
+//         console.log(`DebitCard: Refunded ₹${amount}`)
+//     }
+// }
 
 //? ✅ GiftCard only promises what it can actually DO — just IPayable.
 //?    It does NOT implement IRefundable. No throws. No lies.
-class GiftCard implements IPayable {
-    pay(amount: number): void {
-        console.log(`GiftCard: Paid ₹${amount}`)
-    }
-    //? refund() simply doesn't exist here — and that is perfectly fine!
-}
+// class GiftCard implements IPayable {
+//     pay(amount: number): void {
+//         console.log(`GiftCard: Paid ₹${amount}`)
+//     }
+//     //? refund() simply doesn't exist here — and that is perfectly fine!
+// }
 
-//? Now the function that does refunds ONLY accepts IRefundable.
-//? TypeScript will reject GiftCard here at COMPILE TIME. Safe!
-function issueRefund(method: IRefundable, amount: number): void {
-    method.refund(amount) // ✅ 100% safe — no runtime surprises
-}
+// //? Now the function that does refunds ONLY accepts IRefundable.
+// //? TypeScript will reject GiftCard here at COMPILE TIME. Safe!
+// function issueRefund(method: IRefundable, amount: number): void {
+//     method.refund(amount) // ✅ 100% safe — no runtime surprises
+// }
 
-//? And the checkout counter accepts ANYTHING that can pay.
-function checkout(method: IPayable, amount: number): void {
-    method.pay(amount) // ✅ CreditCard, DebitCard, GiftCard all work here
-}
+// //? And the checkout counter accepts ANYTHING that can pay.
+// function checkout(method: IPayable, amount: number): void {
+//     method.pay(amount) // ✅ CreditCard, DebitCard, GiftCard all work here
+// }
 
 //? Let's run it:
-const creditCard = new CreditCard()
-const debitCard  = new DebitCard()
-const giftCard   = new GiftCard()
+// const creditCard = new CreditCard()
+// const debitCard  = new DebitCard()
+// const giftCard   = new GiftCard()
 
-//? All three can pay — LSP holds, every IPayable is truly substitutable
-checkout(creditCard, 1000)
-checkout(debitCard,  500)
-checkout(giftCard,   250)
+// //? All three can pay — LSP holds, every IPayable is truly substitutable
+// checkout(creditCard, 1000)
+// checkout(debitCard,  500)
+// checkout(giftCard,   250)
 
-//? Only cards that promised refund can refund — type system enforces this
-issueRefund(creditCard, 1000)
-issueRefund(debitCard,  500)
-// issueRefund(giftCard, 250) ← TypeScript ERROR at compile time ✅ (prevented!)
+// //? Only cards that promised refund can refund — type system enforces this
+// issueRefund(creditCard, 1000)
+// issueRefund(debitCard,  500)
+// // issueRefund(giftCard, 250) ← TypeScript ERROR at compile time ✅ (prevented!)
 
 
 
@@ -194,39 +194,43 @@ issueRefund(debitCard,  500)
 
 // ── Write your violation code here ────────────────────────────
 
-class BadVehicle {
-    transportStudents(){
-        throw new Error("this is parent class please inherit")
-    }
-    refuel(){
-        throw new Error("this is parent class method please inherit")
-    }
-}
+// class BadVehicle {
+//     transportStudents(){
+//         throw new Error("this is parent class please inherit")
+//     }
+//     refuel(){
+//         throw new Error("this is parent class method please inherit")
+//     }
+// }
 
-class BadElectricVan extends BadVehicle{
-    transportStudents(): void {
-        console.log("The bad electric van class can transport the studnets")
-    }
-    refuel(): void {
-        throw new Error("Unfortunately I can't be refuelled 'Iam Rechargablel'")
-    }
-}
-class BadBicycle extends BadVehicle{
-    transportStudents(): void {
-        console.log("The bad electric van class can transport the studnets")
-    }
-    refuel(): void {
-        throw new Error("Unfortunately I doesn't need any fuel, I run on man power")
-    }
-}
+// class BadElectricVan extends BadVehicle{
+//     transportStudents(): void {
+//         console.log("The bad electric van class can transport the studnets")
+//     }
+//     refuel(): void {
+//         console.error("Unfortunately I can't be refuelled Iam Rechargable")
+//     }
+// }
+// class BadBicycle extends BadVehicle{
+//     transportStudents(): void {
+//         console.log("The bad electric van class can transport the studnets")
+//     }
+//     refuel(): void {
+//         console.error("Unfortunately I doesn't need any fuel, I run on man power")
+//     }
+// }
 
-const byd = new BadElectricVan()
-byd.transportStudents()
-byd.refuel()
+// const byd = new BadElectricVan()
+// byd.transportStudents()
+// byd.refuel()
 
-const Herculas = new BadBicycle()
-byd.transportStudents()
-byd.refuel()
+// const Herculas = new BadBicycle()
+// Herculas.transportStudents()
+// Herculas.refuel()
+
+//This class is a violates because the refuel method was forcefully implemented by the child classes where it does n't have any use with that 
+// so these classes should obey or in contract with a class that is only having a method called transportable , and seperate interface like rechargeable and refuel so 
+// it solves that issue and also we can assign a function that only accepts those certain methods
 
 //? TASK 2:
 //?   Design the correct interfaces that fix the LSP violation.
@@ -235,9 +239,91 @@ byd.refuel()
 
 // ── Write your interfaces here ────────────────────────────────
 
+//? ✅ REVIEW: GoodVehicle base class — CORRECT LSP thinking!
+//?    You isolated the ONE promise ALL vehicles can keep: TransportStudents.
+//?    This is exactly the "weakest promise" pattern LSP requires.
+//? ⚠️  MINOR ISSUE: throwing in the base class body works but an abstract class
+//?    is more idiomatic TypeScript — `abstract class GoodVehicle { abstract TransportStudents(): void }`
+//?    That way TypeScript itself prevents you from doing `new GoodVehicle()` (see line ~292).
+abstract class GoodVehicle{
+   abstract TransportStudents():void
+}
 
+//? ✅ REVIEW: interface Rechargable — CORRECT!
+//?    You correctly made recharging opt-in. Only electric vehicles implement this.
+//? ⚠️  TYPO: "Rechargable" should be "Rechargeable" (missing an 'e').
+interface Rechargable{
+    Recharge():void
+}
+
+//? ✅ REVIEW: interface Refuel — CORRECT!
+//?    Refuelling is also opt-in. Only petrol/diesel vehicles implement this.
+//? ⚠️  NAMING: Interface and method share the same name `Refuel` — this is confusing.
+//?    Better: rename the interface to `IRefuelable` and keep the method as `refuel()`.
+interface Refuelable{
+    Refuel():void
+}
+
+//? ✅ REVIEW: GoodElectricCar — CORRECT LSP!
+//?    Extends GoodVehicle → honours TransportStudents ✅
+//?    Implements Rechargable → honestly declares it can recharge ✅
+//?    Does NOT implement Refuel → no forced lies ✅
+//?    LSP GOLDEN TEST → Can GoodElectricCar replace GoodVehicle everywhere? YES ✅
+class GoodElectricCar extends GoodVehicle implements Rechargable{
+    TransportStudents(): void {
+        console.log("Ya Iam a good electric and luxurious car I can transport children")
+    }
+    Recharge(): void {
+        console.log("Iam so happy that 😅😅😅 I am save petrol")
+    }
+}
+
+//? ✅ REVIEW: GoodVan — CORRECT LSP!
+//?    Extends GoodVehicle → honours TransportStudents ✅
+//?    Implements Refuel → honestly declares it can refuel ✅
+//?    Does NOT implement Rechargable → no forced lies ✅
+//?    LSP GOLDEN TEST → Can GoodVan replace GoodVehicle everywhere? YES ✅
+class GoodVan extends GoodVehicle implements Refuelable{
+    TransportStudents(): void {
+        console.log("Ya Iam a good electric van I can transport children")
+    }
+    Refuel(): void {
+        console.log("Iam running with petrol")
+    }
+}
+
+//? ✅ REVIEW: Hybrid — CORRECT LSP & BONUS thinking!
+//?    You realized a Hybrid can BOTH refuel AND recharge — excellent real-world modeling!
+//?    Extends GoodVehicle → honours TransportStudents ✅
+//?    Implements both Refuel and Rechargable → honest, no surprises ✅
+//?    LSP GOLDEN TEST → Can Hybrid replace GoodVehicle everywhere? YES ✅
+//? ⚠️  SPACING: minor indentation inconsistency inside the class body (cosmetic only)
+class Hybrid extends GoodVehicle implements Refuelable,Rechargable{
+       TransportStudents(): void {
+        console.log("Ya Iam a good electric van I can transport children")
+    }
+    Refuel(): void {
+        console.log("Iam running with petrol")
+    }
+
+     Recharge(): void {
+        console.log("Iam so happy that 😅😅😅 I am save petrol")
+    }
+}
+
+
+//? ✅ REVIEW: TransportStudents function — CORRECT LSP usage!
+//?    Accepts GoodVehicle → any subtype (GoodElectricCar, GoodVan, Hybrid) can be passed ✅
+//?    The base contract is honoured by ALL subtypes → perfect substitutability ✅
+function TransportStudents(vehicleType:GoodVehicle){
+    vehicleType.TransportStudents()
+}
+
+TransportStudents(new GoodElectricCar)  // ✅ works — LSP safe
+TransportStudents(new GoodVan)          // ✅ works — LSP safe
 
 //? TASK 3:
+
 //?   Create a `SchoolBus` class using your interfaces.
 //?   It can transport students AND refuel.
 
